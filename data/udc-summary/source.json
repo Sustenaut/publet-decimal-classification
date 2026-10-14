@@ -1,0 +1,12 @@
+{
+  "title": "UDC Summary (udcS), SKOS",
+  "publisher": "UDC Consortium",
+  "license": "CC BY-SA 3.0, attribution to the UDC Consortium",
+  "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+  "url": "https://api.finto.fi/rest/v1/udcs/data?format=text/turtle",
+  "served_by": "Finto, the Finnish thesaurus and ontology service (National Library of Finland)",
+  "modified": "2020-11-25T07:53:14+00:00",
+  "retrieved": "2026-10-14",
+  "file": "udcs.ttl",
+  "sha256": "090333d9c3f56946f34daf654e172ae9bc1050a23aab27f7743817afb6a78416"
+}

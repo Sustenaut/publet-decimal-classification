@@ -1,0 +1,6 @@
+#!/bin/sh
+# Runs pdc with the repository's .venv, which holds rdflib (`make venv`).
+here=$(cd "$(dirname "$0")/.." && pwd)
+py="$here/.venv/bin/python"
+[ -x "$py" ] || py=python3
+PYTHONPATH="$here${PYTHONPATH:+:$PYTHONPATH}" exec "$py" -m pdc "$@"

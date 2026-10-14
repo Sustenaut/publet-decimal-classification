@@ -1,0 +1,10 @@
+PDC: the Extended Publet Decimal Classification
+
+The data in data/udc-summary/ is the UDC Summary, (c) UDC Consortium,
+released under CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/),
+as served by Finto (https://finto.fi/udcs/).
+
+The data in data/pdc/ is adapted from it and released under CC BY-SA 4.0
+(data/LICENSE), with attribution to the UDC Consortium.
+
+The code is released under the Apache License 2.0 (LICENSE).
