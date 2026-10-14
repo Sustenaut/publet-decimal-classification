@@ -17,14 +17,14 @@ revised like any other publet.
 | `data/pdc/udc-summary.json` | One concept claim body per labelled UDC class, with its broader classes. Generated. |
 | `data/pdc/REPORT.md` | What was imported, what was left out and why. Generated. |
 | `bin/pdc` | `pdc import [--check]` regenerates `data/pdc/`, and `pdc code CODE...` checks PDC codes. |
-| `tools/publish.py` | Signs the claims into a publet workspace with `pub`, then files the `classifies` annotations that place each class under its broader ones. |
+| `tools/publish.py` | Composes the claims and the `classifies` annotations placing each class under its broader ones with `pub`, and signs them all with the key in `--key` (a `.publet` directory), dated by the required `--created`. |
 
 ```sh
 make venv            # .venv from the hash-locked requirements
 make import          # regenerate data/pdc/ from the pinned source
 make check           # sync-check, import-check, and the Gherkin suite
 bin/pdc code 631.5~12
-tools/publish.py --pub=PATH/TO/pub --workspace=DIR
+tools/publish.py --pub=PATH/TO/pub --key=DIR/.publet --created=2026-10-15T09:00:00Z
 ```
 
 ## Codes
