@@ -17,6 +17,8 @@ revised like any other publet.
 | `data/pdc/udc-summary.json` | One concept claim body per labelled UDC class, with its broader classes. Generated. |
 | `data/pdc/REPORT.md` | What was imported, what was left out and why. Generated. |
 | `bin/pdc` | `pdc import [--check]` regenerates `data/pdc/`, and `pdc code CODE...` checks PDC codes. |
+| `objects/` | The import as signed publets, one file per object, named by CID. |
+| `data/pdc/cids.json` | Each code's concept claim, by CID. |
 | `tools/publish.py` | Composes the claims and the `classifies` annotations placing each class under its broader ones with `pub`, and signs them all with the key in `--key` (a `.publet` directory), dated by the required `--created`. |
 
 ```sh
@@ -26,6 +28,24 @@ make check           # sync-check, import-check, and the Gherkin suite
 bin/pdc code 631.5~12
 tools/publish.py --pub=PATH/TO/pub --key=DIR/.publet --created=2026-10-15T09:00:00Z
 ```
+
+## The signed concepts
+
+`objects/` holds the import as signed publets: 2,430 concept claims, the
+2,428 `classifies` annotations placing each class under its broader
+classes, one `sig` for each of those (purpose `authored`), and the key
+object. `data/pdc/cids.json` maps each code to its claim's CID.
+
+They are signed by the **PDC steward key**,
+`pub:sha2-256:ue7bjgletvpfendw4dptudm64oaaqaoia3pu7vnao6xq6fq5o6jq`
+(principal `human`, label "PDC steward key"). It signs the UDC Summary
+import. Its secret is kept the way the pub* release keys are: in the
+gitignored `corpus/.publet/` of the checkout that signs, never committed.
+The run was
+
+    tools/publish.py --pub=PATH/TO/pub --key=corpus/.publet --created=2026-10-14T00:00:00Z
+
+with the `pub` from schryer/publet#49.
 
 ## Codes
 

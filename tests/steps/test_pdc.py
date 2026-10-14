@@ -88,6 +88,37 @@ def concept_under(code: str, parent: str):
     assert parent in _imported(code)["broader"]
 
 
+STEWARD = "pub:sha2-256:ue7bjgletvpfendw4dptudm64oaaqaoia3pu7vnao6xq6fq5o6jq"
+
+
+def _object(cid: str) -> Path:
+    return ROOT / "objects" / f"{cid.replace(':', '_')}.cbor"
+
+
+@then("every imported class has a concept object in objects/ under its CID in data/pdc/cids.json")
+def every_class_signed():
+    data = json.loads((ROOT / "data" / "pdc" / "udc-summary.json").read_text())
+    cids = json.loads((ROOT / "data" / "pdc" / "cids.json").read_text())
+    assert set(cids) == {c["pdc"] for c in data["classes"]}
+    for code, cid in cids.items():
+        body = _object(cid).read_bytes()
+        assert hashlib.sha256(body).digest() == _digest(cid), code
+        assert code.encode() in body, code
+
+
+def _digest(cid: str) -> bytes:
+    import base64
+    tail = cid.rsplit(":", 1)[1].upper()
+    return base64.b32decode(tail + "=" * (-len(tail) % 8))
+
+
+@then("objects/ holds the PDC steward key's public key object")
+def steward_key():
+    body = _object(STEWARD).read_bytes()
+    assert hashlib.sha256(body).digest() == _digest(STEWARD)
+    assert b"PDC steward key" in body and b"signing" not in body
+
+
 def _copy(tmp_path: Path) -> Path:
     data = tmp_path / "udc-summary"
     shutil.copytree(ROOT / "data" / "udc-summary", data)

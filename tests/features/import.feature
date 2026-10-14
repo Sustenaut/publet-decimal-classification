@@ -11,6 +11,10 @@ Feature: The UDC Summary is imported reproducibly as subject concepts
     And the imported class "631" matches "http://udcdata.info/"
     And the imported class "631" is under "631/635"
 
+  Scenario: Every imported class is a committed, signed object
+    Then every imported class has a concept object in objects/ under its CID in data/pdc/cids.json
+    And objects/ holds the PDC steward key's public key object
+
   Scenario: A source that is not the pinned file is refused
     Given a copy of the source with one class relabelled
     When I import the copy
