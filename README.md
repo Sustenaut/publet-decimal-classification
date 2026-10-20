@@ -19,14 +19,14 @@ revised like any other publet.
 | `bin/pdc` | `pdc import [--check]` regenerates `data/pdc/`, and `pdc code CODE...` checks PDC codes. |
 | `objects/` | The import as signed publets, one file per object, named by CID. |
 | `data/pdc/cids.json` | Each code's concept claim, by CID. |
-| `tools/publish.py` | Composes the claims and the `classifies` annotations placing each class under its broader ones with `pub`, and signs them all with the key in `--key` (a `.publet` directory), dated by the required `--created`. |
+| `tools/publish.py` | Composes the claims and the `classifies` annotations placing each class under its broader ones with the `pub` on PATH, and signs them all with the key in `--key` (a `.publet` directory), dated by the required `--created`. |
 
 ```sh
 make venv            # .venv from the hash-locked requirements
 make import          # regenerate data/pdc/ from the pinned source
 make check           # sync-check, import-check, and the Gherkin suite
 bin/pdc code 631.5~12
-tools/publish.py --pub=PATH/TO/pub --key=DIR/.publet --created=2026-10-15T09:00:00Z
+PATH=DIR/OF/pub:$PATH tools/publish.py --key=DIR/.publet --created=2026-10-15T09:00:00Z
 ```
 
 ## The signed concepts
@@ -45,7 +45,8 @@ The run was
 
     tools/publish.py --pub=PATH/TO/pub --key=corpus/.publet --created=2026-10-14T00:00:00Z
 
-with the `pub` from schryer/publet#49.
+with the `pub` from schryer/publet#49. The script has since dropped `--pub`
+and runs the `pub` on PATH instead.
 
 ## Codes
 
