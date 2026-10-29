@@ -6,6 +6,6 @@ on:
 
 jobs:
   ci:
-    uses: schryer/pubkit/.github/workflows/python-ci.yml@v0.15.2
+    uses: Sustenaut/pubkit/.github/workflows/python-ci.yml@44056227327a7af7f344e008fb72106b2eae4eca # v0.16.0
     # By name: secrets: inherit reaches no workflow of another owner.
     secrets: { SONAR_TOKEN: '${{ secrets.SONAR_TOKEN }}' }
