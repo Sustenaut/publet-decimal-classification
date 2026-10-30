@@ -40,6 +40,21 @@ def check_code(pdc, code: str):
     return _run(pdc, "code", code)
 
 
+@when("I ask pdc for its version", target_fixture="result")
+def ask_version(pdc):
+    return _run(pdc, "--version")
+
+
+def _pyproject_version() -> str:
+    import tomllib
+    return tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+
+
+@then('stdout is "pdc" and the version in pyproject.toml')
+def stdout_version(result):
+    assert result.stdout == f"pdc {_pyproject_version()}\n", result.stdout
+
+
 @when("I check the import", target_fixture="result")
 def check_import(pdc):
     return _run(pdc, "import", "--check")
@@ -178,3 +193,10 @@ def installed_data(env, tmp_path):
     assert Path(where).is_relative_to(env), where
     expected = json.loads((ROOT / "data" / "pdc" / "udc-summary.json").read_text())["classes"]
     assert count == len(expected) and same, out
+
+
+@then("the installed pdc names the version in pyproject.toml")
+def installed_version(env, tmp_path):
+    out = subprocess.run([str(env / "bin" / "pdc"), "--version"],
+                         capture_output=True, text=True, cwd=tmp_path, check=True).stdout
+    assert out == f"pdc {_pyproject_version()}\n", out

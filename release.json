@@ -1,15 +1,21 @@
 {
-  "code": [
-    "src/",
-    "pyproject.toml"
-  ],
+  "name": "publet-decimal-classification",
+  "package": "pkg.publet-decimal-classification",
+  "tag": "PKG-PUBDEC-10-2026",
   "corpus": "corpus",
-  "key": "pub:sha2-256:ue7bjgletvpfendw4dptudm64oaaqaoia3pu7vnao6xq6fq5o6jq",
   "manifest": {
     "kind": "pyproject",
     "path": "pyproject.toml"
   },
-  "name": "publet-decimal-classification",
-  "package": "pkg.publet-decimal-classification",
-  "tag": "PKG-CHANGE-01-2026"
+  "code": [
+    "pdc/",
+    "data/pdc/",
+    "pyproject.toml"
+  ],
+  "command": {
+    "name": "pdc",
+    "check": "pdc --version"
+  },
+  "install": "pip install \"git+https://github.com/Sustenaut/publet-decimal-classification@{tag}\"",
+  "key": "pub:sha2-256:ue7bjgletvpfendw4dptudm64oaaqaoia3pu7vnao6xq6fq5o6jq"
 }

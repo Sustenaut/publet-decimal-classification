@@ -30,3 +30,8 @@ Feature: A PDC code is a UDC Summary notation, or one extended past a separator
       | 631~      | after '~', is not a PDC number          |
       | 631~1.2   | after '~', is not a PDC number          |
       | 631~a     | after '~', is not a PDC number          |
+
+  Scenario: pdc names its version, as a release's identity claim expects
+    When I ask pdc for its version
+    Then it succeeds
+    And stdout is "pdc" and the version in pyproject.toml

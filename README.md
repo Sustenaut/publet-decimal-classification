@@ -52,10 +52,14 @@ code.broader("631.5~12")       # "631.5~1"
 ## Releases
 
 The PDC is released with [pubrel](https://github.com/Sustenaut/pubrel),
-as the other pub* packages are, from the corpus in `corpus/`. A data
-change is a patch release (`pubrel add fixed` or `added`); a change to the
-structure of the data (the files' shapes, or the claims') is recorded as
-`changed`, the breaking part of the version.
+as the other pub* packages are, from the corpus in `corpus/`, and signed by
+the PDC steward key (`release.json`). Each release is tagged, and installs
+with `pip install "git+https://github.com/Sustenaut/publet-decimal-classification@TAG"`.
+A pull request that changes `pdc/`, `data/pdc/` or `pyproject.toml`
+records its change with `pubrel add`. A data change is a patch release
+(`added` or `fixed`); a change to the structure of the data (the files'
+shapes, or the claims') is recorded as `changed`, the breaking part of the
+version. `CHANGELOG.md` is generated from the releases.
 
 ## The signed concepts
 

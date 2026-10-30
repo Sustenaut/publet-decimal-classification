@@ -2,6 +2,7 @@
 
     pdc import [--check] [--data=DIR] [--out=DIR]
     pdc code CODE...
+    pdc --version
 """
 
 from __future__ import annotations
@@ -9,11 +10,21 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tomllib
+from importlib import metadata
 from pathlib import Path
 
 from pdc import code, data_dir, importer
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def _version() -> str:
+    """The installed package's version, or pyproject.toml's in a checkout."""
+    pyproject = ROOT / "pyproject.toml"
+    if pyproject.is_file():
+        return tomllib.loads(pyproject.read_text())["project"]["version"]
+    return metadata.version("publet-decimal-classification")
 
 
 def _udc_notations(out: Path) -> set[str]:
@@ -23,6 +34,7 @@ def _udc_notations(out: Path) -> set[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="pdc", description=__doc__.splitlines()[0])
+    parser.add_argument("--version", action="version", version=f"pdc {_version()}")
     sub = parser.add_subparsers(dest="command", required=True)
     imp = sub.add_parser("import", help="write data/pdc/ from the pinned UDC Summary")
     imp.add_argument("--check", action="store_true", help="fail if data/pdc/ is stale")

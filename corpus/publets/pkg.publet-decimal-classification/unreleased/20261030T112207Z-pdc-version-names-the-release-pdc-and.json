@@ -1,0 +1,4 @@
+{
+  "category": "added",
+  "change": "pdc --version names the release, \"pdc\" and its version."
+}

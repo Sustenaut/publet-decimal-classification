@@ -8,3 +8,4 @@ Feature: pip installs the PDC with its data
     Then it succeeds
     And stdout says "631.5~12	ok	broader 631.5~1"
     And the installed package reads every imported class and its CID from its own data
+    And the installed pdc names the version in pyproject.toml
