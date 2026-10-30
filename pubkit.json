@@ -1,5 +1,8 @@
 {
   "kind": "utility",
+  "ci": {
+    "release": false
+  },
   "bin": "pdc",
   "protect": {
     "checks": [
