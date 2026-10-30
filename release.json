@@ -1,0 +1,15 @@
+{
+  "code": [
+    "src/",
+    "pyproject.toml"
+  ],
+  "corpus": "corpus",
+  "key": "pub:sha2-256:ue7bjgletvpfendw4dptudm64oaaqaoia3pu7vnao6xq6fq5o6jq",
+  "manifest": {
+    "kind": "pyproject",
+    "path": "pyproject.toml"
+  },
+  "name": "publet-decimal-classification",
+  "package": "pkg.publet-decimal-classification",
+  "tag": "PKG-CHANGE-01-2026"
+}
