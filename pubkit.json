@@ -6,7 +6,8 @@
     "checks": [
       "ci / passed",
       "SonarCloud Code Analysis"
-    ]
+    ],
+    "release_app": 5529889
   },
   "security": {
     "sonar": {
