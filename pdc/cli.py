@@ -11,7 +11,7 @@ import json
 import sys
 from pathlib import Path
 
-from pdc import code, importer
+from pdc import code, data_dir, importer
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -30,7 +30,7 @@ def main(argv: list[str] | None = None) -> int:
     imp.add_argument("--out", type=Path, default=ROOT / "data" / "pdc")
     chk = sub.add_parser("code", help="check PDC codes against the imported UDC Summary")
     chk.add_argument("codes", nargs="+")
-    chk.add_argument("--out", type=Path, default=ROOT / "data" / "pdc")
+    chk.add_argument("--out", type=Path, default=data_dir())
     args = parser.parse_args(argv)
 
     if args.command == "import":
