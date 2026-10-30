@@ -1,0 +1,47 @@
+# Written by `pubkit sync` from the ci block of pubkit.json. Do not edit:
+# change pubkit.json and run `pubkit sync`.
+name: pr
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  functional:
+    name: ci
+    uses: Sustenaut/pubkit/.github/workflows/job-python-functional.yml@7914b2abb933747e303f5f981d8335d3704dcdb3 # v0.21.0
+
+  audit:
+    name: ci
+    uses: Sustenaut/pubkit/.github/workflows/job-python-audit.yml@7914b2abb933747e303f5f981d8335d3704dcdb3 # v0.21.0
+
+  osv:
+    name: ci
+    uses: Sustenaut/pubkit/.github/workflows/job-osv.yml@7914b2abb933747e303f5f981d8335d3704dcdb3 # v0.21.0
+
+  review:
+    name: ci
+    uses: Sustenaut/pubkit/.github/workflows/job-review.yml@7914b2abb933747e303f5f981d8335d3704dcdb3 # v0.21.0
+
+  sonar:
+    name: ci
+    needs: [functional]
+    uses: Sustenaut/pubkit/.github/workflows/job-sonar.yml@7914b2abb933747e303f5f981d8335d3704dcdb3 # v0.21.0
+    with: {"reports": "sonar.python.coverage.reportPaths=*.xml", "layout": "-Dsonar.sources=. -Dsonar.tests=tests -Dsonar.exclusions=tests/**"}
+    secrets: { SONAR_TOKEN: '${{ secrets.SONAR_TOKEN }}' }
+
+  # The one check a ruleset requires: it passes only when every job
+  # above succeeded. None of them is ever skipped for not being asked for.
+  passed:
+    name: ci / passed
+    if: always()
+    needs: [functional, audit, osv, review, sonar]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "$RESULTS"
+          echo "$RESULTS" | jq -e 'all(.[]; .result == "success")' > /dev/null
+        env: { RESULTS: '${{ toJSON(needs) }}' }
