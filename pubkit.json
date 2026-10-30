@@ -1,15 +1,12 @@
 {
   "kind": "utility",
-  "ci": {
-    "release": false
-  },
+  "ci": {},
   "bin": "pdc",
   "protect": {
     "checks": [
       "ci / passed",
       "SonarCloud Code Analysis"
-    ],
-    "tags": false
+    ]
   },
   "security": {
     "sonar": {

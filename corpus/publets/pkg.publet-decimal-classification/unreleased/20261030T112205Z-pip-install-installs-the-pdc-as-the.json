@@ -1,0 +1,4 @@
+{
+  "category": "added",
+  "change": "`pip install` installs the PDC as the package `publet-decimal-classification`: the `pdc` command, and `pdc.classes()` and `pdc.cids()` reading the generated data it carries as `pdc.data`."
+}

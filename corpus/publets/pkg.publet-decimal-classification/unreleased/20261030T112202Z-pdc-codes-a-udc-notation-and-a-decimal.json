@@ -1,0 +1,4 @@
+{
+  "category": "added",
+  "change": "PDC codes: a UDC notation, `~`, and a decimal PDC number; `pdc code` checks them and names the broader class."
+}

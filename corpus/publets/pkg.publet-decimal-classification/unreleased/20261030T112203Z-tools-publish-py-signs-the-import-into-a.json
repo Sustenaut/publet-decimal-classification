@@ -1,0 +1,4 @@
+{
+  "category": "added",
+  "change": "tools/publish.py signs the import into a publet workspace with the `pub` on PATH, with a stated --created and a given key. It no longer takes the binary to run as `--pub`, which SonarCloud flagged as command injection (pythonsecurity:S8701)."
+}
