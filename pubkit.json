@@ -10,5 +10,10 @@
       "SonarCloud Code Analysis"
     ],
     "tags": false
+  },
+  "security": {
+    "sonar": {
+      "args": "-Dsonar.issue.ignore.multicriteria=pylock -Dsonar.issue.ignore.multicriteria.pylock.ruleKey=text:S8565 -Dsonar.issue.ignore.multicriteria.pylock.resourceKey=pyproject.toml"
+    }
   }
 }

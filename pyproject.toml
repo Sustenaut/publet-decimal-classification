@@ -31,3 +31,13 @@ packages = ["pdc", "pdc.data"]
 
 [tool.setuptools.package-data]
 "pdc.data" = ["*.json", "REPORT.md"]
+
+# `make functional` measures the suite, the `pdc` processes it starts
+# included, into coverage/coverage.xml for SonarQube Cloud.
+[tool.coverage.run]
+source = ["pdc"]
+patch = ["subprocess"]
+parallel = true
+
+[tool.coverage.xml]
+output = "coverage/coverage.xml"

@@ -3,3 +3,5 @@
 -r requirements-pubkit.txt
 # pdc's own dependency: it reads the UDC Summary's SKOS Turtle.
 rdflib==7.1.4
+# `make functional` measures the suite, the `pdc` processes it starts included.
+coverage==7.16.2
