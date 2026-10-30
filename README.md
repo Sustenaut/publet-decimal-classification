@@ -17,7 +17,8 @@ revised like any other publet.
 | `data/pdc/udc-summary.json` | One concept claim body per labelled UDC class, with its broader classes. Generated. |
 | `data/pdc/REPORT.md` | What was imported, what was left out and why. Generated. |
 | `bin/pdc` | `pdc import [--check]` regenerates `data/pdc/`, and `pdc code CODE...` checks PDC codes. |
-| `objects/` | The import as signed publets, one file per object, named by CID. |
+| `corpus/objects/` | The import as signed publets, one file per object, named by CID: the members of the PDC's corpus. |
+| `pyproject.toml` | The `publet-decimal-classification` Python package: `pdc` and its data. |
 | `data/pdc/cids.json` | Each code's concept claim, by CID. |
 | `tools/publish.py` | Composes the claims and the `classifies` annotations placing each class under its broader ones with the `pub` on PATH, and signs them all with the key in `--key` (a `.publet` directory), dated by the required `--created`. |
 
@@ -29,9 +30,36 @@ bin/pdc code 631.5~12
 PATH=DIR/OF/pub:$PATH tools/publish.py --key=DIR/.publet --created=2026-10-15T09:00:00Z
 ```
 
+## Installing
+
+```sh
+pip install "git+https://github.com/Sustenaut/publet-decimal-classification"
+pdc code 631.5~12
+```
+
+The package carries the generated data as `pdc.data`, so it can be used
+from Python without a checkout:
+
+```python
+import pdc
+from pdc import code
+
+pdc.classes()       # every imported class: code, UDC URI, broader classes, concept claim
+pdc.cids()          # each code's signed concept claim, by CID
+code.broader("631.5~12")       # "631.5~1"
+```
+
+## Releases
+
+The PDC is released with [pubrel](https://github.com/Sustenaut/pubrel),
+as the other pub* packages are, from the corpus in `corpus/`. A data
+change is a patch release (`pubrel add fixed` or `added`); a change to the
+structure of the data (the files' shapes, or the claims') is recorded as
+`changed`, the breaking part of the version.
+
 ## The signed concepts
 
-`objects/` holds the import as signed publets: 2,430 concept claims, the
+`corpus/objects/` holds the import as signed publets: 2,430 concept claims, the
 2,428 `classifies` annotations placing each class under its broader
 classes, one `sig` for each of those (purpose `authored`), and the key
 object. `data/pdc/cids.json` maps each code to its claim's CID.
@@ -39,7 +67,8 @@ object. `data/pdc/cids.json` maps each code to its claim's CID.
 They are signed by the **PDC steward key**,
 `pub:sha2-256:ue7bjgletvpfendw4dptudm64oaaqaoia3pu7vnao6xq6fq5o6jq`
 (principal `human`, label "PDC steward key"). It signs the UDC Summary
-import. Its secret is kept the way the pub* release keys are: in the
+import, and it is the corpus's key, so it signs the PDC's releases too.
+Its secret is kept the way the pub* release keys are: in the
 gitignored `corpus/.publet/` of the checkout that signs, never committed.
 The run was
 

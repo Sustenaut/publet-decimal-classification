@@ -8,8 +8,12 @@ venv: ## Create .venv from the hash-locked requirements (rdflib, and the test su
 	python3 -m venv .venv
 	.venv/bin/pip install --quiet --require-hashes -r tests/requirements.lock
 
-functional: ## The Gherkin suite against bin/pdc
-	cd tests && PDC_BIN_DIR=$(CURDIR)/bin ../.venv/bin/pytest -q $(PYTEST_ARGS)
+functional: ## The Gherkin suite against bin/pdc, with its coverage in coverage/coverage.xml
+	rm -rf coverage && mkdir coverage
+	cd tests && PDC_BIN_DIR=$(CURDIR)/bin COVERAGE_RCFILE=$(CURDIR)/pyproject.toml COVERAGE_FILE=$(CURDIR)/coverage/.coverage \
+	  ../.venv/bin/coverage run -m pytest -q $(PYTEST_ARGS)
+	COVERAGE_FILE=coverage/.coverage .venv/bin/coverage combine -q
+	COVERAGE_FILE=coverage/.coverage .venv/bin/coverage xml -q
 
 import: ## Regenerate data/pdc/ from the UDC Summary that data/udc-summary/source.json pins
 	bin/pdc import

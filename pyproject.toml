@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "publet-decimal-classification"
+version = "0.1.0"
+description = "The Extended Publet Decimal Classification: the UDC Summary as signed concept publets, with PDC codes."
+readme = "README.md"
+license = "Apache-2.0 AND CC-BY-SA-4.0"
+license-files = ["LICENSE", "NOTICE", "data/LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "David Schryer", email = "schryer@gmail.com" }]
+# rdflib reads the UDC Summary's SKOS Turtle for `pdc import`.
+dependencies = ["rdflib>=7.1"]
+
+[project.urls]
+Repository = "https://github.com/Sustenaut/publet-decimal-classification"
+
+[project.scripts]
+pdc = "pdc.cli:main"
+
+# The generated data ships inside the package as `pdc.data`, read by
+# `pdc.data_dir()`, while the checkout keeps it in data/pdc/ beside its
+# licence.
+[tool.setuptools]
+packages = ["pdc", "pdc.data"]
+
+[tool.setuptools.package-dir]
+"pdc.data" = "data/pdc"
+
+[tool.setuptools.package-data]
+"pdc.data" = ["*.json", "REPORT.md"]
+
+# `make functional` measures the suite, the `pdc` processes it starts
+# included, into coverage/coverage.xml for SonarQube Cloud.
+[tool.coverage.run]
+source = ["pdc"]
+patch = ["subprocess"]
+parallel = true
+
+[tool.coverage.xml]
+output = "coverage/coverage.xml"

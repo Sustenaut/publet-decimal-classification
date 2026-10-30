@@ -3,3 +3,8 @@ __pycache__/
 .pytest_cache/
 # The PDC steward key's secret, as release keys are kept in the pub* repos: never committed.
 /corpus/.publet/
+# What `pip install .` and `python -m build` leave behind.
+/build/
+/dist/
+*.egg-info/
+/coverage/
