@@ -1,0 +1,30 @@
+{
+  "uses": [
+    {
+      "plugin": "finto.terms",
+      "paths": [
+        "data/udc-summary/source.json"
+      ]
+    },
+    {
+      "plugin": "github.app-token",
+      "paths": [
+        ".github/workflows/main.yml",
+        ".github/workflows/pr.yml"
+      ]
+    },
+    {
+      "plugin": "sonarcloud.scan",
+      "paths": [
+        ".github/workflows/main.yml",
+        ".github/workflows/pr.yml"
+      ]
+    }
+  ],
+  "exclude": [
+    {
+      "path": "data/pdc/**",
+      "reason": "Generated data"
+    }
+  ]
+}
