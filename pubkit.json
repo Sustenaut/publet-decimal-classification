@@ -5,7 +5,8 @@
   "protect": {
     "checks": [
       "ci / passed",
-      "SonarCloud Code Analysis"
+      "SonarCloud Code Analysis",
+      "integrations / scan"
     ],
     "release_app": 5529889
   },

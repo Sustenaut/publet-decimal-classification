@@ -4,21 +4,24 @@
       "plugin": "finto.terms",
       "paths": [
         "data/udc-summary/source.json"
-      ]
+      ],
+      "mode": "required"
     },
     {
       "plugin": "github.app-token",
       "paths": [
         ".github/workflows/main.yml",
         ".github/workflows/pr.yml"
-      ]
+      ],
+      "mode": "required"
     },
     {
       "plugin": "sonarcloud.scan",
       "paths": [
         ".github/workflows/main.yml",
         ".github/workflows/pr.yml"
-      ]
+      ],
+      "mode": "required"
     }
   ],
   "exclude": [
