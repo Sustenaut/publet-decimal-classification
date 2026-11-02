@@ -1,6 +1,7 @@
-Feature: The UDC Summary is imported reproducibly as subject concepts
+Feature: The UDC Summary is imported reproducibly as families of subject concepts
   The source file is pinned by checksum. Each labelled class becomes a
-  subject concept at its notation, placed under its broader classes.
+  subject concept at its notation, defined in the family under its broader
+  class. `tools/publish.py` signs the families and an edition into a new corpus.
 
   Scenario: The committed import is what the pinned source gives
     When I check the import
@@ -26,3 +27,48 @@ Feature: The UDC Summary is imported reproducibly as subject concepts
     When I import the copy
     Then it fails
     And stderr says "the separator '~' appears in UDC notation"
+
+  Scenario: Every class is defined once, in the family under its broader class
+    Then every imported class is in exactly one family, the one under its broader class
+    And the top family holds "-" and "----"
+    And there are 573 families
+
+  Scenario: A special auxiliary head is listed apart from its family's classes
+    Then the family under "62" lists "62-1/-9" as an auxiliary and "620" as a member
+    And the family under "62-1/-9" is in the section "special-auxiliaries"
+    And the family under "(1/9)" is in the section "common-auxiliaries"
+    And the family under "63" is in the section "main"
+
+  Scenario: A class heading a family is flagged, and no other is
+    Then each class has `children` exactly when a family lists it as its parent
+
+  Scenario: Each family names one grouping, of the groups its branch may use
+    Then group 1 holds the six heads under "---"
+    And the grouping of the family under "62" is the common group and that of "62-1/-9"
+    And the grouping of the family under "616" adds those of "616-01/-099" to the common group
+    And every family's grouping is defined, and every grouping's groups are
+
+  Scenario: The stated counts are what the families make
+    Then the counts in families.json agree with the families
+
+  Scenario: An import keeps the numbers of the one before
+    Given the families with the group numbers reversed
+    When I import over them
+    Then it succeeds
+    And each head keeps its reversed number
+
+  Scenario: A class that is not under one broader class is refused
+    Then a class with two broader classes is refused
+
+  Scenario: Publishing makes one edition of a fresh corpus, signed by the key
+    Given a throwaway key and a pub that knows families
+    When I publish to a new corpus
+    Then it succeeds
+    And the corpus's edition lists every family by its CID
+    And the corpus's signing link is gone and the key's store is unchanged
+
+  Scenario: Publishing refuses a corpus that exists
+    Given a throwaway key and a pub that knows families
+    When I publish to a corpus that exists
+    Then it fails
+    And stderr says "the families start a new corpus"

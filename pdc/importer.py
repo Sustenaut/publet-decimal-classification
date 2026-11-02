@@ -1,12 +1,11 @@
-"""Turning the UDC Summary into PDC concept claims.
+"""Turning the UDC Summary into PDC families.
 
-Each labelled class becomes the body of one `definitional` claim defining
-a subject concept (publet spec Section 5.9.1) at the class's notation,
-with its English label as `name`, its scope notes as boundary lines, and
-`matches` naming its udcdata.info URI. Its broader classes, from
-`skos:broader`, are recorded beside it for the `classifies` annotations
-that place it (Section 9.1). Nothing here is signed: `tools/publish.py`
-composes the claims with a key.
+Each labelled class becomes a subject concept (publet spec Section 5.9.1) at
+its notation, with its English label as `name`, its scope notes as boundary
+lines, and `matches` naming its udcdata.info URI. Its broader class, from
+`skos:broader`, decides the family it is defined in (`pdc.families`). Nothing
+here is signed: `tools/publish.py` composes the families and the edition with
+a key.
 """
 
 from __future__ import annotations
@@ -15,7 +14,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from pdc import code
+from pdc import code, families
 from pdc.udc import UdcClass, load
 
 ATTRIBUTION = "UDC Summary, UDC Consortium, CC BY-SA 3.0"
@@ -25,24 +24,19 @@ class ImportError_(Exception):
     """The source cannot be imported as it stands."""
 
 
-def _claim(c: UdcClass) -> dict:
-    defines = {"sort": "concept", "pdc": c.notation, "name": c.label}
+def _entry(c: UdcClass, broader: list[str]) -> dict:
+    entry = {"pdc": c.notation, "uri": c.uri, "broader": broader, "name": c.label}
     if c.scope_notes:
-        defines["boundary"] = {"includes": list(c.scope_notes), "excludes": []}
-    defines["matches"] = [{"relation": "exact", "ref": c.uri}]
-    return {
-        "class": "definitional",
-        "lang": "en",
-        "content": f"{c.notation}: {c.label}",
-        "scope": "unconditional",
-        "defines": defines,
-        "cite": c.uri,
-        "cite_note": ATTRIBUTION,
-    }
+        entry["boundary"] = {"includes": list(c.scope_notes), "excludes": []}
+    return entry
 
 
-def build(data: Path) -> tuple[dict, str]:
-    """The import of `data/udc-summary`, and its report, as text."""
+def build(data: Path, previous: dict | None = None) -> tuple[dict, dict, str]:
+    """The import of `data/udc-summary`, its families, and its report as text.
+
+    `previous` is the families of the last import, whose group and grouping
+    numbers are kept (`pdc.families`).
+    """
     source = json.loads((data / "source.json").read_text())
     ttl = data / source["file"]
     digest = hashlib.sha256(ttl.read_bytes()).hexdigest()
@@ -77,15 +71,17 @@ def build(data: Path) -> tuple[dict, str]:
     unlabelled = [c for c in classes if not c.label]
     reparented = [c for c in imported
                   if any(b in by_uri and not by_uri[b].label for b in c.broader)]
-    entries = [{"pdc": c.notation, "uri": c.uri, "broader": labelled_ancestors(c),
-                "claim": _claim(c)}
+    entries = [_entry(c, labelled_ancestors(c))
                for c in sorted(imported, key=lambda c: c.notation)]
+    grouped = families.build(entries, previous)
+    counts = grouped["counts"]
     signs = "".join(sorted({ch for c in classes for ch in c.notation}))
     out = {
         "source": {k: source[k] for k in ("title", "publisher", "license", "url", "modified", "retrieved", "sha256")},
         "separator": code.SEPARATOR,
         "classes": entries,
     }
+    grouped = {"source": out["source"], "cite": source["url"], "cite_note": ATTRIBUTION, **grouped}
     nonprefix = sum(1 for e in entries for b in e["broader"]
                     if not e["pdc"].startswith(b))
     lines = [
@@ -97,6 +93,18 @@ def build(data: Path) -> tuple[dict, str]:
         "",
         f"{len(entries)} of {len(classes)} classes are in `udc-summary.json`, each a "
         "subject concept at its UDC notation.",
+        "",
+        f"They make {counts['total']['families']} families, with "
+        f"{counts['total']['classes']} members and {counts['total']['auxiliaries']} special "
+        f"auxiliary heads, using {counts['groups']} auxiliary groups and "
+        f"{counts['groupings']} groupings.",
+        "",
+        "| Section | Families | Classes | Auxiliaries |",
+        "|---|---|---|---|",
+        *(f"| {name} | {counts[name]['families']} | {counts[name]['classes']} | "
+          f"{counts[name]['auxiliaries']} |" for name in (*families.SECTIONS, "total")),
+        "",
+        "The total includes the top family, which is in no section.",
         "",
         f"- Characters used in notation: `` {signs} ``. The PDC separator `{code.SEPARATOR}` is not among them.",
         f"- Classes with a scope note, carried as boundary lines: {sum(1 for c in imported if c.scope_notes)}.",
@@ -114,15 +122,18 @@ def build(data: Path) -> tuple[dict, str]:
         + ", ".join(f"`{c.notation}`" for c in sorted(reparented, key=lambda c: c.notation)),
         "",
     ]
-    return out, "\n".join(lines)
+    return out, grouped, "\n".join(lines)
 
 
 def write(data: Path, out: Path, check: bool = False) -> list[str]:
     """Write `udc-summary.json` and `REPORT.md` to `out`, or with `check`,
     name the files that differ from what the source gives."""
-    result, report = build(data)
+    existing = out / "families.json"
+    previous = json.loads(existing.read_text()) if existing.exists() else None
+    result, grouped, report = build(data, previous)
     files = {
         out / "udc-summary.json": json.dumps(result, ensure_ascii=False, indent=1) + "\n",
+        out / "families.json": json.dumps(grouped, ensure_ascii=False, indent=1) + "\n",
         out / "REPORT.md": report,
     }
     stale = []

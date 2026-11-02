@@ -2,11 +2,12 @@
 
 The PDC is a public subject classification for publets. It is the
 [UDC Summary](https://www.udcsummary.info) (about 2,400 classes of the
-Universal Decimal Classification), with each class imported as a concept
-publet under its UDC code. Narrower PDC classes extend it where UDC is too
-coarse. Each concept is a `definitional` claim with `defines.sort:
-"concept"` (publet spec Section 5.9.1), so it can be reviewed, disputed and
-revised like any other publet.
+Universal Decimal Classification), with each class imported as a subject
+concept under its UDC code. Narrower PDC classes extend it where UDC is too
+coarse. The classes directly under one class are defined together in one
+family, a `definitional` claim with `defines.sort: "family"` (publet spec
+Section 5.9.1). A definition is changed by a new version and is not debated.
+Anyone may propose a change, as that section describes.
 
 ## What is here
 
@@ -14,20 +15,21 @@ revised like any other publet.
 |---|---|
 | `data/udc-summary/udcs.ttl` | The UDC Summary's SKOS data, as downloaded. |
 | `data/udc-summary/source.json` | Where and when it was downloaded, and its sha256. |
-| `data/pdc/udc-summary.json` | One concept claim body per labelled UDC class, with its broader classes. Generated. |
+| `data/pdc/udc-summary.json` | Each labelled UDC class: its code, URI, name, boundary and broader class. Generated. |
+| `data/pdc/families.json` | The families, with their auxiliary groups, groupings and counts. Generated. |
 | `data/pdc/REPORT.md` | What was imported, what was left out and why. Generated. |
 | `bin/pdc` | `pdc import [--check]` regenerates `data/pdc/`, and `pdc code CODE...` checks PDC codes. |
 | `corpus/objects/` | The import as signed publets, one file per object, named by CID: the members of the PDC's corpus. |
 | `pyproject.toml` | The `publet-decimal-classification` Python package: `pdc` and its data. |
 | `data/pdc/cids.json` | Each code's concept claim, by CID. |
-| `tools/publish.py` | Composes the claims and the `classifies` annotations placing each class under its broader ones with the `pub` on PATH, and signs them all with the key in `--key` (a `.publet` directory), dated by the required `--created`. |
+| `tools/publish.py` | Composes the families and the edition into a new corpus with the `pub` on PATH, and signs them with the key in `--key` (a `.publet` directory). |
 
 ```sh
 make venv            # .venv from the hash-locked requirements
 make import          # regenerate data/pdc/ from the pinned source
 make check           # sync-check, import-check, and the Gherkin suite
 bin/pdc code 631.5~12
-PATH=DIR/OF/pub:$PATH tools/publish.py --key=DIR/.publet --created=2026-10-15T09:00:00Z
+PATH=DIR/OF/pub:$PATH tools/publish.py --key=DIR/.publet --corpus=NEW --release=X.Y.Z --created=2026-10-15T09:00:00Z
 ```
 
 ## Installing
@@ -44,7 +46,8 @@ from Python without a checkout:
 import pdc
 from pdc import code
 
-pdc.classes()       # every imported class: code, UDC URI, broader classes, concept claim
+pdc.classes()       # every imported class: code, UDC URI, broader class, name, boundary
+pdc.family_data()   # the families, with their auxiliary groups, groupings and counts
 pdc.cids()          # each code's signed concept claim, by CID
 code.broader("631.5~12")       # "631.5~1"
 ```
@@ -102,20 +105,25 @@ as the UDC notation, `~`, and a PDC number:
   by their notation. In the UDC Summary, 867 broader links are not
   notation prefixes: for example, `631`'s broader class is `631/635`.
 
-## The concept claims
+## The families
 
-Each labelled class becomes a subject concept: a concept with neither a
-`kind` nor a `relation` (spec Section 5.9.1, schryer/publet#49).
+Each labelled class is a subject concept (spec Section 5.9.1), defined in the
+family under its broader class. The top family holds the two UDC roots, `-` and
+`----`. `data/pdc/REPORT.md` gives the numbers.
 
-- `pdc` is the notation.
-- `name` is the English preferred label.
-- `boundary.includes` holds the English scope notes, where a class has
-  any.
+- `pdc` is the notation, `name` the English preferred label, and
+  `boundary.includes` the English scope notes, where a class has any.
 - `matches` names its `http://udcdata.info/` URI.
-- The claim cites that URI, with the attribution as the citation's note.
+- `children: true` marks a class that heads a family of its own.
+- `auxiliaries` holds the special auxiliaries that start in the family. One is
+  told by its notation, as UDC writes it: `62-1`, `` 81`1 ``, `7.01`.
+- `grouping` names the auxiliary grouping the family's classes may use: the
+  common tables, plus the special auxiliaries of its parent and every class
+  above it. Group and grouping numbers never change meaning, so each import
+  keeps the numbers already in `data/pdc/families.json`.
 
-A PDC edition, a document listing one concept lineage per code, comes
-later. So do the PDC's own classes.
+A family cites the UDC Summary, with the attribution as the citation's note. An
+edition lists every family by its exact CID, and is what a reader pins.
 
 ## Licence and attribution
 

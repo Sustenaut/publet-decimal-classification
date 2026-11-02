@@ -1,0 +1,4 @@
+{
+  "category": "changed",
+  "change": "The PDC is imported as families: `data/pdc/udc-summary.json` no longer holds concept claims, `data/pdc/families.json` holds the families, groups, groupings and counts, and `tools/publish.py` writes them and an edition into a new corpus"
+}
