@@ -93,7 +93,7 @@ Its secret is kept the way the pub* release keys are: in the
 gitignored `corpus/.publet/` of the checkout that signs, never committed.
 The run was
 
-    tools/publish.py --key=corpus/.publet --corpus=NEW --release=0.2.0 --created=CREATED
+    tools/publish.py --key=corpus/.publet --corpus=NEW --release=0.2.0 --created=2026-11-03T07:28:11Z
 
 with `pub` v0.3.0, after which `NEW`'s objects, lock, corpus file and store
 replaced the corpus here. Release 0.1.0's store is kept beside the new one as
