@@ -61,6 +61,41 @@ Feature: The UDC Summary is imported reproducibly as families of subject concept
   Scenario: A class that is not under one broader class is refused
     Then a class with two broader classes is refused
 
+  Scenario: Publishing drives pub through the families, the edition and the publish
+    Given a stand-in pub and a key directory
+    When I publish to a new corpus with the stand-in pub
+    Then it succeeds
+    And the stand-in composed every family and then the edition, each signed with purpose "authored"
+    And the stand-in's edition lists every family composed, and pdc-cids.json names it and every code
+    And the new corpus lists the init policy in .draft-discards, and its signing link is gone
+    And the stand-in was asked to publish only after the pin was checked in the repository
+
+  Scenario Outline: Publishing refuses what it should not act on
+    Given a stand-in pub and a key directory
+    When I publish with <argument> set to <value> with the stand-in pub
+    Then it fails
+    And stderr says "<reason>"
+    And nothing was composed
+
+    Examples:
+      | argument  | value                | reason                                   |
+      | --corpus  | ../outside           | must name one new directory here         |
+      | --corpus  | a/b                  | must name one new directory here         |
+      | --corpus  | ..                   | must name one new directory here         |
+      | --corpus  | taken                | taken exists                             |
+      | --created | yesterday            | must be a UTC time                       |
+      | --key     | not-a-key            | is not a .publet directory               |
+
+  Scenario: Publishing refuses without pub on PATH
+    Given a stand-in pub and a key directory
+    When I publish to a new corpus with no pub on PATH
+    Then it fails
+    And stderr says "no `pub` on PATH"
+
+  Scenario: The installed package reads the edition and each code's family
+    Then pdc.edition() is the edition in data/pdc/cids.json, and pdc.cids() gives every code's family
+    And pdc.family_data() has 573 families
+
   Scenario: Publishing makes one edition of a fresh corpus, signed by the key
     Given a throwaway key and a pub that knows families
     When I publish to a new corpus
@@ -72,4 +107,4 @@ Feature: The UDC Summary is imported reproducibly as families of subject concept
     Given a throwaway key and a pub that knows families
     When I publish to a corpus that exists
     Then it fails
-    And stderr says "the families start a new corpus"
+    And stderr says "exists; the families start a new corpus"

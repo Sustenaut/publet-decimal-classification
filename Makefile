@@ -10,7 +10,7 @@ venv: ## Create .venv from the hash-locked requirements (rdflib, and the test su
 
 functional: ## The Gherkin suite against bin/pdc, with its coverage in coverage/coverage.xml
 	rm -rf coverage && mkdir coverage
-	cd tests && PDC_BIN_DIR=$(CURDIR)/bin COVERAGE_RCFILE=$(CURDIR)/pyproject.toml COVERAGE_FILE=$(CURDIR)/coverage/.coverage \
+	cd tests && PDC_BIN_DIR=$(CURDIR)/bin COVERAGE_ROOT=$(CURDIR) COVERAGE_RCFILE=$(CURDIR)/pyproject.toml COVERAGE_FILE=$(CURDIR)/coverage/.coverage \
 	  ../.venv/bin/coverage run -m pytest -q $(PYTEST_ARGS)
 	COVERAGE_FILE=coverage/.coverage .venv/bin/coverage combine -q
 	COVERAGE_FILE=coverage/.coverage .venv/bin/coverage xml -q

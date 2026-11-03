@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compose the PDC's families and edition into a fresh corpus, signed by a key.
 
-    tools/publish.py --key=DIR/.publet --corpus=NEW --release=X.Y.Z \\
+    tools/publish.py --key=DIR/.publet --corpus=NAME --release=X.Y.Z \\
                      --created=YYYY-MM-DDTHH:MM:SSZ
 
 Composes each family in `data/pdc/families.json` as a `definitional` claim
@@ -10,8 +10,10 @@ with `pub compose`, then the edition listing them all (publet spec Section
 runs `pub publish`, which signs the package publet, exports `objects/` and
 writes a new domain at generation 0 with its signed generation record.
 
-`--corpus` must not exist: the families start a new domain, because a generation
-may not lose members, and the concept objects before them stay in git history.
+`--corpus` names a new directory, made in the current directory: one path
+component, so that nothing outside it is written. It must not exist: the
+families start a new domain, because a generation may not lose members, and the
+concept objects before them stay in git history.
 `--key` is the `.publet` directory holding the signing key, made with `pub init`
 and `pub sign --generate-key --principal=... --label=...`. Nothing is added to
 its store, and the secret is reached through a link in the
@@ -30,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -96,12 +99,29 @@ def discard_init_policy(corpus: Path) -> None:
     (corpus / ".draft-discards").write_text(f"policy={policy}\n")
 
 
+def new_corpus(name: str) -> Path:
+    """The directory `name` in the current directory, made empty. `name` must be
+    one path component that does not exist yet, so a mistyped or crafted value
+    cannot reach anything outside it."""
+    here = Path.cwd().resolve()
+    single = os.path.basename(name)
+    if single != name or single in ("", ".", ".."):
+        sys.exit(f"--corpus must name one new directory here, not a path: {name!r}")
+    corpus = (here / single).resolve()
+    if corpus.parent != here:
+        sys.exit(f"--corpus must name one new directory here: {name!r}")
+    if corpus.exists():
+        sys.exit(f"{name} exists; the families start a new corpus")
+    corpus.mkdir()
+    return corpus
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--key", type=Path, required=True,
                         help="the .publet directory holding signing.key")
-    parser.add_argument("--corpus", type=Path, required=True,
-                        help="the new corpus's directory, which must not exist")
+    parser.add_argument("--corpus", required=True,
+                        help="the new corpus's directory, made here; it must not exist")
     parser.add_argument("--release", required=True, help="the PDC release this edition is")
     parser.add_argument("--created", required=True,
                         help="the signing run's time, e.g. 2026-10-15T09:00:00Z")
@@ -111,8 +131,6 @@ def main() -> int:
     if args.key.name != ".publet" or not (args.key / "signing.key").is_file():
         sys.exit(f"{args.key} is not a .publet directory holding signing.key; "
                  "make one with `pub init` and `pub sign --generate-key`")
-    if args.corpus.exists():
-        sys.exit(f"{args.corpus} exists; the families start a new corpus")
     for tool in ("pub", "pub-cat", "pub-store", "pub-ls"):
         if shutil.which(tool) is None:
             sys.exit(f"no `{tool}` on PATH; put the directory holding it first on PATH")
@@ -123,8 +141,7 @@ def main() -> int:
     data = json.loads((ROOT / "data" / "pdc" / "families.json").read_text())
     config = json.loads((ROOT / "corpus" / "corpus.json").read_text())
 
-    corpus = args.corpus
-    corpus.mkdir(parents=True)
+    corpus = new_corpus(args.corpus)
     run(corpus, "pub", "corpus", "init", "--name=corpus", f"--label={config['label']}",
         f"--bound={config['bound']}")
     discard_init_policy(corpus)

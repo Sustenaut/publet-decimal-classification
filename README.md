@@ -29,7 +29,7 @@ make venv            # .venv from the hash-locked requirements
 make import          # regenerate data/pdc/ from the pinned source
 make check           # sync-check, import-check, and the Gherkin suite
 bin/pdc code 631.5~12
-tools/publish.py --key=DIR/.publet --corpus=NEW --release=X.Y.Z --created=2026-10-15T09:00:00Z
+tools/publish.py --key=DIR/.publet --corpus=NAME --release=X.Y.Z --created=2026-10-15T09:00:00Z
 ```
 
 ## Which publet
@@ -93,10 +93,11 @@ Its secret is kept the way the pub* release keys are: in the
 gitignored `corpus/.publet/` of the checkout that signs, never committed.
 The run was
 
-    tools/publish.py --key=corpus/.publet --corpus=NEW --release=0.2.0 --created=2026-11-03T07:28:11Z
+    tools/publish.py --key=corpus/.publet --corpus=~/git/scratch/pdc-signed --release=0.2.0 --created=2026-11-03T07:28:11Z
 
-with `pub` v0.3.0, after which `NEW`'s objects, lock, corpus file and store
-replaced the corpus here. Release 0.1.0's store is kept beside the new one as
+with `pub` v0.3.0, after which the new corpus's objects, lock, corpus file and
+store replaced the corpus here. `--corpus` has since come to take one directory
+name, made in the current directory. Release 0.1.0's store is kept beside the new one as
 `corpus/.publet/objects-v0.1.0.redb`. `corpus/.draft-discards`, also kept out of
 git, names the policy `pub corpus init` made in the new store, which is no part
 of the PDC, so that no release exports it.

@@ -403,11 +403,14 @@ def throwaway(publishing):
     publishing["held"] = _held(publishing)
 
 
-def _publish(publishing):
+def _publish(publishing, **override: str):
+    """Run tools/publish.py in the corpus's parent, as a person would."""
+    flags = {"--key": str(publishing["key"]), "--corpus": publishing["corpus"].name,
+             "--release": "0.2.0", "--created": "2026-11-02T18:00:00Z", **override}
     return subprocess.run(
-        [sys.executable, str(ROOT / "tools" / "publish.py"), f"--key={publishing['key']}",
-         f"--corpus={publishing['corpus']}", "--release=0.2.0", "--created=2026-11-02T18:00:00Z"],
-        env=publishing["env"], capture_output=True, text=True, check=False)
+        [sys.executable, str(ROOT / "tools" / "publish.py"), *(f"{k}={v}" for k, v in flags.items())],
+        cwd=publishing["corpus"].parent, env=publishing["env"], capture_output=True, text=True,
+        check=False)
 
 
 @when("I publish to a new corpus", target_fixture="result")
@@ -437,3 +440,128 @@ def edition_lists(publishing):
 def nothing_left(publishing):
     assert not (publishing["corpus"] / ".publet" / "signing.key").exists()
     assert _held(publishing) == publishing["held"]
+
+
+# --- publishing, with a stand-in pub ---------------------------------------
+
+FAKE = Path(__file__).resolve().parent.parent / "support" / "fake_pub.py"
+
+
+@pytest.fixture
+def standin(tmp_path) -> dict:
+    """`pub` and its plumbing as one stand-in script, and a key directory."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    for tool in ("pub", "pub-cat", "pub-store", "pub-ls"):
+        (bin_dir / tool).symlink_to(FAKE)
+    key = tmp_path / "key" / ".publet"
+    key.mkdir(parents=True)
+    (key / "signing.key").write_text("00" * 32 + "\n")
+    (key / "config").write_text("author=pub:sha2-256:steward\n")
+    log = tmp_path / "pub.log"
+    env = dict(os.environ, PATH=f"{bin_dir}{os.pathsep}{os.environ['PATH']}", FAKE_PUB_LOG=str(log))
+    work = tmp_path / "work"
+    work.mkdir()
+    return {"env": env, "key": key, "corpus": work / "new", "log": log, "bin": bin_dir}
+
+
+@given("a stand-in pub and a key directory")
+def standin_given(standin):
+    standin["log"].write_text("")
+
+
+def _calls(standin) -> list[dict]:
+    return [json.loads(line) for line in standin["log"].read_text().splitlines()]
+
+
+@when("I publish to a new corpus with the stand-in pub", target_fixture="result")
+def publish_standin(standin):
+    return _publish(standin)
+
+
+@when(parsers.parse("I publish with {argument} set to {value} with the stand-in pub"),
+      target_fixture="result")
+def publish_standin_with(standin, argument: str, value: str):
+    (standin["corpus"].parent / "taken").mkdir(exist_ok=True)
+    return _publish(standin, **{argument: value})
+
+
+@when("I publish to a new corpus with no pub on PATH", target_fixture="result")
+def publish_no_pub(standin):
+    path = os.pathsep.join(p for p in os.environ["PATH"].split(os.pathsep)
+                           if not (Path(p) / "pub").exists())
+    standin["env"] = dict(standin["env"], PATH=path)
+    return _publish(standin)
+
+
+@then(parsers.parse('the stand-in composed every family and then the edition, each signed with '
+                    'purpose "{purpose}"'))
+def composed_in_order(standin, purpose: str):
+    calls = _calls(standin)
+    composes = [c for c in calls if c["args"][:1] == ["compose"]]
+    signs = [c for c in calls if c["args"][:1] == ["sign"]]
+    assert len(composes) == 574 and len(signs) == 574, (len(composes), len(signs))
+    assert all(f"--purpose={purpose}" in c["args"] for c in signs)
+    made = standin["corpus"] / ".publet" / "made"
+    sorts = [json.loads(p.read_text())["sort"] for p in made.iterdir()]
+    assert sorts.count("family") == 573 and sorts.count("edition") == 1
+    last = next(a for a in composes[-1]["args"] if a.startswith("--content="))
+    assert last == "--content=The PDC at release 0.2.0.", last
+
+
+@then("the stand-in's edition lists every family composed, and pdc-cids.json names it and every code")
+def edition_lists(standin):
+    corpus = standin["corpus"]
+    cids = json.loads((corpus / "pdc-cids.json").read_text())
+    edition = json.loads((corpus / "objects" / (cids["edition"].replace(":", "_") + ".cbor")).read_text())
+    listed = {edition["top"], *(c for s in edition["sections"].values() for c in s.values())}
+    assert listed == set(cids["classes"].values()) and len(listed) == 573
+    data = json.loads((ROOT / "data" / "pdc" / "udc-summary.json").read_text())["classes"]
+    assert set(cids["classes"]) == {c["pdc"] for c in data}
+
+
+@then("the new corpus lists the init policy in .draft-discards, and its signing link is gone")
+def discards_and_link(standin):
+    corpus = standin["corpus"]
+    assert (corpus / ".draft-discards").read_text() == "policy=pub:sha2-256:initpolicy\n"
+    assert not (corpus / ".publet" / "signing.key").exists()
+    assert "author=pub:sha2-256:steward" in (corpus / ".publet" / "config").read_text()
+
+
+@then("the stand-in was asked to publish only after the pin was checked in the repository")
+def pin_first(standin):
+    calls = _calls(standin)
+    require = next(i for i, c in enumerate(calls) if c["args"][:1] == ["require"])
+    publish = next(i for i, c in enumerate(calls) if c["args"][:1] == ["publish"])
+    assert require < publish and calls[require]["cwd"] == str(ROOT)
+
+
+@then("nothing was composed")
+def nothing_composed(standin):
+    calls = _calls(standin) if standin["log"].exists() else []
+    assert not [c for c in calls if c["args"][:1] in (["compose"], ["corpus"])], calls
+    assert not (standin["corpus"].parent.parent / "outside").exists()
+
+
+@then("pdc.edition() is the edition in data/pdc/cids.json, and pdc.cids() gives every code's family")
+def package_cids():
+    sys.path.insert(0, str(ROOT))
+    try:
+        import pdc
+        cids = json.loads((ROOT / "data" / "pdc" / "cids.json").read_text())
+        assert pdc.edition() == cids["edition"]
+        assert pdc.cids() == cids["classes"]
+        assert len(pdc.classes()) == len(pdc.cids())
+    finally:
+        sys.path.remove(str(ROOT))
+
+
+@then(parsers.parse("pdc.family_data() has {count:d} families"))
+def package_families(count: int):
+    sys.path.insert(0, str(ROOT))
+    try:
+        import pdc
+        assert len(pdc.family_data()["families"]) == count
+    finally:
+        sys.path.remove(str(ROOT))
+
