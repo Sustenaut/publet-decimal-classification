@@ -21,7 +21,7 @@ Anyone may propose a change, as that section describes.
 | `bin/pdc` | `pdc import [--check]` regenerates `data/pdc/`, and `pdc code CODE...` checks PDC codes. |
 | `corpus/objects/` | The import as signed publets, one file per object, named by CID: the members of the PDC's corpus. |
 | `pyproject.toml` | The `publet-decimal-classification` Python package: `pdc` and its data. |
-| `data/pdc/cids.json` | Each code's concept claim, by CID. |
+| `data/pdc/cids.json` | The edition's CID, and each code's family, by CID. |
 | `tools/publish.py` | Composes the families and the edition into a new corpus with the `pub` on PATH, and signs them with the key in `--key` (a `.publet` directory). |
 
 ```sh
@@ -58,7 +58,8 @@ from pdc import code
 
 pdc.classes()       # every imported class: code, UDC URI, broader class, name, boundary
 pdc.family_data()   # the families, with their auxiliary groups, groupings and counts
-pdc.cids()          # each code's signed concept claim, by CID
+pdc.cids()          # each code's signed family, by CID
+pdc.edition()       # the signed edition this data is, by CID
 code.broader("631.5~12")       # "631.5~1"
 ```
 
@@ -74,12 +75,15 @@ records its change with `pubrel add`. A data change is a patch release
 shapes, or the claims') is recorded as `changed`, the breaking part of the
 version. `CHANGELOG.md` is generated from the releases.
 
-## The signed concepts
+## The signed families
 
-`corpus/objects/` holds the import as signed publets: 2,430 concept claims, the
-2,428 `classifies` annotations placing each class under its broader
-classes, one `sig` for each of those (purpose `authored`), and the key
-object. `data/pdc/cids.json` maps each code to its claim's CID.
+`corpus/objects/` holds the import as signed publets: 573 families defining the
+2,430 classes, the edition listing every family by its CID, one `sig` for each
+of those (purpose `authored`), the package publet, the key object, and the
+domain with its two signed generation records. `data/pdc/cids.json` gives the
+edition's CID and each code's family. The concept claims and `classifies`
+annotations of release 0.1.0 are in git history and its tag, `v0.1.0`; the
+families start a new domain, because a generation may not lose members.
 
 They are signed by the **PDC steward key**,
 `pub:sha2-256:ue7bjgletvpfendw4dptudm64oaaqaoia3pu7vnao6xq6fq5o6jq`
@@ -89,10 +93,11 @@ Its secret is kept the way the pub* release keys are: in the
 gitignored `corpus/.publet/` of the checkout that signs, never committed.
 The run was
 
-    tools/publish.py --pub=PATH/TO/pub --key=corpus/.publet --created=2026-10-14T00:00:00Z
+    tools/publish.py --key=corpus/.publet --corpus=NEW --release=0.2.0 --created=CREATED
 
-with the `pub` from schryer/publet#49. The script has since dropped `--pub`
-and runs the `pub` on PATH instead.
+with `pub` v0.3.0, after which `NEW`'s objects, lock, corpus file and store
+replaced the corpus here. Release 0.1.0's store is kept beside the new one as
+`corpus/.publet/objects-v0.1.0.redb`.
 
 ## Codes
 

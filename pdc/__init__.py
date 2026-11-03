@@ -31,5 +31,10 @@ def family_data() -> dict:
 
 
 def cids() -> dict[str, str]:
-    """Each code's signed concept claim, by CID."""
-    return json.loads((data_dir() / "cids.json").read_text())
+    """Each code's signed family, the claim defining it, by CID."""
+    return json.loads((data_dir() / "cids.json").read_text())["classes"]
+
+
+def edition() -> str:
+    """The signed edition this data is, by CID: what a reader pins."""
+    return json.loads((data_dir() / "cids.json").read_text())["edition"]

@@ -12,8 +12,9 @@ Feature: The UDC Summary is imported reproducibly as families of subject concept
     And the imported class "631" matches "http://udcdata.info/"
     And the imported class "631" is under "631/635"
 
-  Scenario: Every imported class is a committed, signed object
-    Then every imported class has a concept object in corpus/objects/ under its CID in data/pdc/cids.json
+  Scenario: Every imported class is in a committed, signed family
+    Then every imported class is defined by its family's object in corpus/objects/, under the CID in data/pdc/cids.json
+    And the edition in data/pdc/cids.json is in corpus/objects/ and lists every family there
     And corpus/objects/ holds the PDC steward key's public key object
 
   Scenario: A source that is not the pinned file is refused

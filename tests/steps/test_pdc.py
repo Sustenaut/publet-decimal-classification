@@ -131,15 +131,34 @@ def _object(cid: str) -> Path:
     return ROOT / "corpus" / "objects" / f"{cid.replace(':', '_')}.cbor"
 
 
-@then("every imported class has a concept object in corpus/objects/ under its CID in data/pdc/cids.json")
+def _cids() -> dict:
+    return json.loads((ROOT / "data" / "pdc" / "cids.json").read_text())
+
+
+def _verified(cid: str) -> bytes:
+    body = _object(cid).read_bytes()
+    assert hashlib.sha256(body).digest() == _digest(cid), cid
+    return body
+
+
+@then("every imported class is defined by its family's object in corpus/objects/, under the CID in "
+      "data/pdc/cids.json")
 def every_class_signed():
     data = json.loads((ROOT / "data" / "pdc" / "udc-summary.json").read_text())
-    cids = json.loads((ROOT / "data" / "pdc" / "cids.json").read_text())
-    assert set(cids) == {c["pdc"] for c in data["classes"]}
-    for code, cid in cids.items():
-        body = _object(cid).read_bytes()
-        assert hashlib.sha256(body).digest() == _digest(cid), code
-        assert code.encode() in body, code
+    classes = _cids()["classes"]
+    assert set(classes) == {c["pdc"] for c in data["classes"]}
+    bodies = {cid: _verified(cid) for cid in set(classes.values())}
+    for code, cid in classes.items():
+        assert b"family" in bodies[cid] and code.encode() in bodies[cid], code
+
+
+@then("the edition in data/pdc/cids.json is in corpus/objects/ and lists every family there")
+def edition_signed():
+    cids = _cids()
+    body = _verified(cids["edition"])
+    assert b"edition" in body
+    for family in set(cids["classes"].values()):
+        assert family.encode() in body, family
 
 
 def _digest(cid: str) -> bytes:
