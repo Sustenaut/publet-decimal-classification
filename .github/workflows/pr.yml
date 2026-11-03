@@ -29,7 +29,7 @@ jobs:
   sonar:
     name: ci
     needs: [functional]
-    uses: Sustenaut/pubkit/.github/workflows/job-sonar.yml@bbcbfecaf10e8d17273b47b699dba9be70061fac # v0.23.1
+    uses: Sustenaut/pubkit/.github/workflows/job-sonar.yml@24b6c7ba012a758fa9741c530d224ddad3f2c0dc # v0.24.0
     with: {"reports": "sonar.python.coverage.reportPaths=*.xml", "layout": "-Dsonar.sources=. -Dsonar.tests=tests -Dsonar.exclusions=tests/**"}
     secrets: { SONAR_TOKEN: '${{ secrets.SONAR_TOKEN }}' }
 
