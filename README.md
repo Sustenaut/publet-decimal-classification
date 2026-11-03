@@ -29,7 +29,17 @@ make venv            # .venv from the hash-locked requirements
 make import          # regenerate data/pdc/ from the pinned source
 make check           # sync-check, import-check, and the Gherkin suite
 bin/pdc code 631.5~12
-PATH=DIR/OF/pub:$PATH tools/publish.py --key=DIR/.publet --corpus=NEW --release=X.Y.Z --created=2026-10-15T09:00:00Z
+tools/publish.py --key=DIR/.publet --corpus=NEW --release=X.Y.Z --created=2026-10-15T09:00:00Z
+```
+
+## Which publet
+
+`pub-version.txt` names the releases of publet's `pub` this repository is built
+with, `^0.3`: the first with families and the 1 MiB object limit. `pub` refuses to
+run here otherwise, and `tools/publish.py` checks it first. Install it with
+
+```sh
+cargo install --locked --git https://github.com/Sustenaut/publet --tag v0.3.0 publet-cli pub-ls pub-cat pub-store
 ```
 
 ## Installing

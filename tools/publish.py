@@ -18,8 +18,10 @@ its store, and the secret is reached through a link in the
 new corpus that is removed at the end, so the secret is not copied. `--created`
 is stated, never defaulted, so a signing run says when it happened.
 
-Runs the `pub`, `pub-cat`, `pub-store` and `pub-ls` found on PATH, which must
-know the `family` sort. To use another build, put its directory first on PATH.
+Runs the `pub`, `pub-cat`, `pub-store` and `pub-ls` found on PATH: a release of
+publet that `pub-version.txt` admits, which is checked first. Install it with
+`cargo install --locked --git https://github.com/Sustenaut/publet --tag v0.3.0
+publet-cli pub-ls pub-cat pub-store`.
 Prints the numbers, and writes `pdc-cids.json` in the corpus: the edition's CID,
 and each code's family CID.
 """
@@ -42,7 +44,7 @@ from pdc import families as grouping  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 PURPOSE = "authored"
 TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
-OBJECT_LIMIT = 64 * 1024
+OBJECT_LIMIT = 1024 * 1024
 PACKAGE = "publets/pkg.publet-decimal-classification"
 
 
@@ -104,6 +106,9 @@ def main() -> int:
     for tool in ("pub", "pub-cat", "pub-store", "pub-ls"):
         if shutil.which(tool) is None:
             sys.exit(f"no `{tool}` on PATH; put the directory holding it first on PATH")
+    pinned = subprocess.run(["pub", "require"], cwd=ROOT, capture_output=True, text=True)
+    if pinned.returncode != 0:
+        sys.exit(pinned.stderr.strip() or "the pub on PATH is not the one pub-version.txt names")
     created = f"--created={args.created}"
     data = json.loads((ROOT / "data" / "pdc" / "families.json").read_text())
     config = json.loads((ROOT / "corpus" / "corpus.json").read_text())
