@@ -21,10 +21,20 @@ def data_dir() -> Path:
 
 
 def classes() -> list[dict]:
-    """Every imported class: its code (`pdc`), UDC URI, broader classes and concept claim."""
+    """Every imported class: its code (`pdc`), UDC URI, broader class, name and boundary."""
     return json.loads((data_dir() / "udc-summary.json").read_text())["classes"]
 
 
+def family_data() -> dict:
+    """The families, with their auxiliary groups, groupings and counts."""
+    return json.loads((data_dir() / "families.json").read_text())
+
+
 def cids() -> dict[str, str]:
-    """Each code's signed concept claim, by CID."""
-    return json.loads((data_dir() / "cids.json").read_text())
+    """Each code's signed family, the claim defining it, by CID."""
+    return json.loads((data_dir() / "cids.json").read_text())["classes"]
+
+
+def edition() -> str:
+    """The signed edition this data is, by CID: what a reader pins."""
+    return json.loads((data_dir() / "cids.json").read_text())["edition"]
