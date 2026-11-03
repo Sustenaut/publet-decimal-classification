@@ -86,6 +86,16 @@ def adopt_key(key: Path, corpus: Path) -> None:
     (corpus / ".publet" / "signing.key").symlink_to((key / "signing.key").resolve())
 
 
+def discard_init_policy(corpus: Path) -> None:
+    """Keep the policy `pub corpus init` made out of `objects/`: it is the new
+    workspace's own setting, authored before the key was adopted, and no part of
+    the PDC. `pub publish` exports nothing `.draft-discards` names."""
+    policy = next(line.split("=", 1)[1] for line in
+                  (corpus / ".publet" / "config").read_text().splitlines()
+                  if line.startswith("policy="))
+    (corpus / ".draft-discards").write_text(f"policy={policy}\n")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--key", type=Path, required=True,
@@ -117,6 +127,7 @@ def main() -> int:
     corpus.mkdir(parents=True)
     run(corpus, "pub", "corpus", "init", "--name=corpus", f"--label={config['label']}",
         f"--bound={config['bound']}")
+    discard_init_policy(corpus)
     adopt_key(args.key.resolve(), corpus)
     shutil.copytree(ROOT / "corpus" / PACKAGE, corpus / PACKAGE)
 

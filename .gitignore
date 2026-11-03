@@ -3,6 +3,9 @@ __pycache__/
 .pytest_cache/
 # The PDC steward key's secret, as release keys are kept in the pub* repos: never committed.
 /corpus/.publet/
+# What `pub publish` must not export from that store, such as `pub corpus init`'s
+# own policy: local, as the store is.
+/corpus/.draft-discards
 # What `pip install .` and `python -m build` leave behind.
 /build/
 /dist/

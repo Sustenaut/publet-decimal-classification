@@ -97,7 +97,9 @@ The run was
 
 with `pub` v0.3.0, after which `NEW`'s objects, lock, corpus file and store
 replaced the corpus here. Release 0.1.0's store is kept beside the new one as
-`corpus/.publet/objects-v0.1.0.redb`.
+`corpus/.publet/objects-v0.1.0.redb`. `corpus/.draft-discards`, also kept out of
+git, names the policy `pub corpus init` made in the new store, which is no part
+of the PDC, so that no release exports it.
 
 ## Codes
 
