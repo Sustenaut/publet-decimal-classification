@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "publet-decimal-classification"
-version = "0.1.0"
+version = "0.2.0"
 description = "The Extended Publet Decimal Classification: the UDC Summary as signed concept publets, with PDC codes."
 readme = "README.md"
 license = "Apache-2.0 AND CC-BY-SA-4.0"
