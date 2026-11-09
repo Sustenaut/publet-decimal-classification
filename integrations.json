@@ -29,5 +29,8 @@
       "path": "data/pdc/**",
       "reason": "Generated data"
     }
+  ],
+  "own_hosts": [
+    "sustenaut.eu"
   ]
 }
