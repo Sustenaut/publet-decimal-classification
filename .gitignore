@@ -11,3 +11,6 @@ __pycache__/
 /dist/
 *.egg-info/
 /coverage/
+
+# Local secrets, such as the Bitwarden token ./with-secrets reads: never committed.
+.env
