@@ -1,6 +1,6 @@
 # The functional suite's direct dependencies. Exact pins only; the resolved
-# set with hashes lives in requirements.lock. Regenerate it with `pubkit lock`.
--r requirements-pubkit.txt
+# set with hashes lives in requirements.lock. Regenerate it with `pubrules lock`.
+-r requirements-pubrules.txt
 # pdc's own dependency: it reads the UDC Summary's SKOS Turtle.
 rdflib==7.1.4
 # `make functional` measures the suite, the `pdc` processes it starts included.
