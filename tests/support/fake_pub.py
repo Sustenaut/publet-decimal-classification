@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -S
 """A stand-in for publet's `pub`, `pub-cat`, `pub-store` and `pub-ls`.
 
 `tools/publish.py` drives the real commands, which CI for a Python repository
@@ -7,6 +7,10 @@ run end to end: it composes by naming each object after its body, writes those
 objects on `pub publish`, and logs every call to `FAKE_PUB_LOG`, so a test can
 check what was asked of `pub` and in what order. It checks nothing a real `pub`
 would, so the real thing is tested separately, where it is installed.
+
+It runs without site-packages (`python3 -S`): `tools/publish.py` calls it over a
+thousand times, and each run measured by coverage's subprocess patch would
+take the run past the two minutes `I run` allows.
 """
 
 from __future__ import annotations
